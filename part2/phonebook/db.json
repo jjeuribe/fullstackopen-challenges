@@ -1,0 +1,35 @@
+{
+  "contacts": [
+    {
+      "name": "Arto Hellas",
+      "phoneNumber": "040-123456",
+      "id": "1"
+    },
+    {
+      "name": "Ada Lovelace",
+      "phoneNumber": "39-44-5323523",
+      "id": "2"
+    },
+    {
+      "name": "Dan Abramov",
+      "phoneNumber": "12-43-234345",
+      "id": "3"
+    },
+    {
+      "name": "Mary Poppendieck",
+      "phoneNumber": "39-23-6423122",
+      "id": "4"
+    },
+    {
+      "name": "Javier",
+      "phoneNumber": "33333333",
+      "id": "gPKVqBj_FmQ"
+    },
+    {
+      "name": "Alex",
+      "phoneNumber": "4444444",
+      "id": "T8MpBCaCD-w"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
