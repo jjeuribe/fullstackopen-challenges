@@ -1,0 +1,20 @@
+### Get Phonebook info
+GET http://localhost:3001/info
+
+### Get all contacts 
+GET http://localhost:3001/api/persons
+
+### Get a contact
+GET http://localhost:3001/api/persons/1
+
+### Delete an existing contact
+DELETE http://localhost:3001/api/persons/1
+
+### Create a contact 
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "Javier",
+  "number": "111111111"
+}
