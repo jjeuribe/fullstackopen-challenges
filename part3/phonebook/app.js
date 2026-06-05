@@ -6,22 +6,22 @@ let phonebook = [
   { 
     "id": "1",
     "name": "Arto Hellas", 
-    "number": "040-123456"
+    "phoneNumber": "040-123456"
   },
   { 
     "id": "2",
     "name": "Ada Lovelace", 
-    "number": "39-44-5323523"
+    "phoneNumber": "39-44-5323523"
   },
   { 
     "id": "3",
     "name": "Dan Abramov", 
-    "number": "12-43-234345"
+    "phoneNumber": "12-43-234345"
   },
   { 
     "id": "4",
     "name": "Mary Poppendieck", 
-    "number": "39-23-6423122"
+    "phoneNumber": "39-23-6423122"
   }
 ]
 
@@ -31,6 +31,7 @@ morgan.token('body', (req) => {
   : ''
 })
 
+app.use(express.static('dist'))
 app.use(express.json())
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :body')
@@ -41,12 +42,12 @@ const contactExists = (name) => {
   const normalizedName = name.trim().toLowerCase()
   return phonebook.some(contact => contact.name.toLowerCase() === normalizedName)
 }
-const validateNewContact = (name, number) => {
+const validateNewContact = (name, phoneNumber) => {
   if (!name) {
     return { error: 'Contact name is missing' }
   }
 
-  if (!number) {
+  if (!phoneNumber) {
      return { error: 'Phone number is missing' }
   }
 
@@ -76,8 +77,8 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-  const { name, number } = request.body
-  const contactValidation = validateNewContact(name, number)
+  const { name, phoneNumber } = request.body
+  const contactValidation = validateNewContact(name, phoneNumber)
 
   if (contactValidation.error) {
     return response.status(400).json({
@@ -94,7 +95,7 @@ app.post('/api/persons', (request, response) => {
   const contact = {
     id: generateContactId(),
     name, 
-    number
+    phoneNumber
   }
 
   phonebook = [ ...phonebook, contact ]
