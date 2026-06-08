@@ -74,12 +74,6 @@ app.post('/api/persons', (request, response, next) => {
 app.patch('/api/persons/:id', (request, response, next) => {
   const { phoneNumber } = request.body
 
-  if (!phoneNumber) {
-    return response.status(400).json({
-      error: 'Phone number is missing'
-    })
-  }
-
   Contact.findById(request.params.id)
     .then(contact => {
       if (!contact) {
