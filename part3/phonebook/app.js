@@ -1,29 +1,8 @@
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
-
-let phonebook = [
-  { 
-    "id": "1",
-    "name": "Arto Hellas", 
-    "phoneNumber": "040-123456"
-  },
-  { 
-    "id": "2",
-    "name": "Ada Lovelace", 
-    "phoneNumber": "39-44-5323523"
-  },
-  { 
-    "id": "3",
-    "name": "Dan Abramov", 
-    "phoneNumber": "12-43-234345"
-  },
-  { 
-    "id": "4",
-    "name": "Mary Poppendieck", 
-    "phoneNumber": "39-23-6423122"
-  }
-]
+const config = require('./utils/config')
+const Contact = require('./models/contact')
 
 morgan.token('body', (req) => {
   return req.method === 'POST' 
@@ -36,84 +15,141 @@ app.use(express.json())
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :body')
 )
+  
+app.get('/api/persons', (request, response, next) => {
+  Contact
+    .find({})
+    .then(contacts => {
+      response.json(contacts)
+    })
+    .catch(error => next(error))
+})
 
-const generateContactId = () => Math.random().toString(36).substring(2, 11)
-const contactExists = (name) => {
-  const normalizedName = name.trim().toLowerCase()
-  return phonebook.some(contact => contact.name.toLowerCase() === normalizedName)
-}
-const validateNewContact = (name, phoneNumber) => {
-  if (!name) {
-    return { error: 'Contact name is missing' }
-  }
+app.get('/api/persons/:id', (request, response, next) => {
+  Contact
+    .findById(request.params.id)
+    .then(contact => {
+      if (!contact) {
+        return response.status(404).end()
+      }
+      
+      response.json(contact)
+    })
+    .catch(error => next(error))
+})
+
+app.delete('/api/persons/:id', (request, response, next) => {
+  Contact 
+    .findByIdAndDelete(request.params.id)
+    .then(_ => response.status(204).end())
+    .catch(error => next(error))
+})
+
+app.post('/api/persons', (request, response, next) => {
+  const { name, phoneNumber } = request.body
+
+  Contact
+    .exists({ name })
+    .then(contactExists => {
+      if (contactExists) {
+        const error = new Error(`Contact ${ name } already exists in your phonebook`)
+        error.code = 'CONTACT_EXISTS'
+        
+        throw error
+      }
+
+      const contact = new Contact({
+        name, 
+        phoneNumber
+      })
+      
+      return contact.save()
+    })
+    .then(savedContact => {
+      response.json(savedContact)
+    })
+    .catch(error => next(error))
+})
+
+app.patch('/api/persons/:id', (request, response, next) => {
+  const { phoneNumber } = request.body
 
   if (!phoneNumber) {
-     return { error: 'Phone number is missing' }
-  }
-
-  return { error: null }
-}
-  
-app.get('/api/persons', (request, response) => {
-  response.json(phonebook)
-})
-
-app.get('/api/persons/:id', (request, response) => {
-  const contactId = request.params.id
-  const contact = phonebook.find(c => c.id === contactId)
-
-  if (!contact) {
-    return response.status(404).end()
-  }
-
-  response.json(contact)
-})
-
-app.delete('/api/persons/:id', (request, response) => {
-  const contactId = request.params.id
-  phonebook = phonebook.filter(c => c.id !== contactId)
-
-  response.status(204).end()
-})
-
-app.post('/api/persons', (request, response) => {
-  const { name, phoneNumber } = request.body
-  const contactValidation = validateNewContact(name, phoneNumber)
-
-  if (contactValidation.error) {
     return response.status(400).json({
-      error: contactValidation.error
+      error: 'Phone number is missing'
     })
   }
 
-  if (contactExists(name)) {
-    return response.status(400).json({
-      error: `Contact ${ name } already exists in your phonebook`
+  Contact.findById(request.params.id)
+    .then(contact => {
+      if (!contact) {
+        return null 
+      }
+
+      contact.phoneNumber = phoneNumber
+
+      return contact.save()
     })
-  }
+    .then(updatedContact => {
+      if (!updatedContact) {
+        return response.status(404).end()
+      }
 
-  const contact = {
-    id: generateContactId(),
-    name, 
-    phoneNumber
-  }
+      response.json(updatedContact)
+    })
+    .catch(error => next(error))
 
-  phonebook = [ ...phonebook, contact ]
-
-  response.send(contact)
 })
 
-app.get('/info', (request, response) => {
+app.get('/info', (request, response, next) => {
   const now = new Date()
-  const phonebookCount = phonebook.length
 
-  response.send(`
-    <p>Phonebook has info for ${ phonebookCount } people</p>
-    <p>${ now }</p>
-  `)
+  Contact
+    .countDocuments({})
+    .then(total => {
+      response.send(`
+        <p>Phonebook has info for ${ total } people</p>
+        <p>${ now }</p>
+      `)
+    })
+    .catch(error => next(error))
 })
 
-const PORT = process.env.PORT || 3001
+const unknownEndpoint = (request, response) => {
+  response.status(404).json({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  if (error.code === 'CONTACT_EXISTS') {
+    return response.status(409).json({
+      error: error.message
+    })
+  }
+  
+  if (error.name === 'CastError') {
+	  return response.status(400).json({
+      error: 'malformatted id' 
+    })
+  }
+
+  if (error.name === 'ValidationError') {
+    return response.status(400).json({ 
+      error: error.message 
+    })  
+  }
+
+  console.error(error)
+
+  return response.status(500).json({
+    error: 'Internal server error'
+   })
+}
+
+app.use(errorHandler)
+
+const PORT = config.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${ PORT }`)
 })

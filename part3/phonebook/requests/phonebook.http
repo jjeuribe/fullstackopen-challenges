@@ -16,5 +16,13 @@ Content-Type: application/json
 
 {
   "name": "Javier",
-  "phoneNumber": "111111111"
+  "phoneNumber": "433-4324343"
+}
+
+### Update a contact
+PATCH http://localhost:3001/api/persons/1
+Content-Type: application/json
+
+{
+  "phoneNumber": "666666666"
 }
