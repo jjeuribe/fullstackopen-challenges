@@ -1,0 +1,13 @@
+### Get all posts
+GET http://localhost:3003/api/posts
+
+### Create a new post 
+POST http://localhost:3003/api/posts
+Content-Type: application/json
+
+{
+  "title": "Web's Doe Way",
+  "author": "Web Doe",
+  "url": "https://web.com/meet-web-doe",
+  "likes": 10000
+}
