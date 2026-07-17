@@ -1,18 +1,23 @@
 const router = require('express').Router()
 const Post = require('../models/Post')
 
-router.get('/', (request, response) => {
-  Post.find({}).then((posts) => {
-    response.json(posts)
-  })
+router.get('/', async (request, response) => {
+  const posts = await Post.find({})
+
+  return response.json(posts)
 })
 
-router.post('/', (request, response) => {
-  const post = new Post(request.body)
+router.post('/', async (request, response) => {
+  const { title, author, url, likes = 0 } = request.body
 
-  post.save().then((result) => {
-    response.status(201).json(result)
-  })
+  if (!title || !url) {
+    return response.sendStatus(400)
+  }
+
+  const post = new Post({ title, author, url, likes })
+  const savedPost = await post.save()
+
+  return response.status(201).json(savedPost)
 })
 
 module.exports = router
