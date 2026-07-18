@@ -1,5 +1,5 @@
-const dummy = (posts) => {
-    return 1;
+const dummy = () => {
+  return 1;
 }
 
 const totalLikes = (posts) => {
@@ -21,18 +21,18 @@ const mostPosts = (posts) => {
     return null
   }
 
-  const postsByAuthor = {}; 
+  const postsByAuthor = {};
 
-  for (let post of posts) {
+  for (const post of posts) {
     postsByAuthor[post.author] = (postsByAuthor[post.author] || 0) + 1
   }
 
-  const [author, postsCount ] = Object
+  const [author, postsCount] = Object
     .entries(postsByAuthor)
     .reduce((previousAuthor, author) =>
       author[1] > previousAuthor[1] ? author : previousAuthor
     )
-  
+
   return {
     author,
     posts: postsCount
@@ -46,16 +46,16 @@ const mostLikes = (posts) => {
 
   const totalLikesByAuthor = {}
 
-  for (let post of posts) {
+  for (const post of posts) {
     totalLikesByAuthor[post.author] = (totalLikesByAuthor[post.author] || 0) + post.likes
   }
 
-  const [author, likesCount ] = Object
+  const [author, likesCount] = Object
     .entries(totalLikesByAuthor)
     .reduce((previousAuthor, author) =>
       author[1] > previousAuthor[1] ? author : previousAuthor
-  )
-  
+    )
+
   return {
     author,
     likes: likesCount
@@ -63,9 +63,9 @@ const mostLikes = (posts) => {
 }
 
 module.exports = {
-    dummy,
-    totalLikes, 
-    favoritePost,
-    mostPosts,
-    mostLikes
+  dummy,
+  totalLikes,
+  favoritePost,
+  mostPosts,
+  mostLikes
 }

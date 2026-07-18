@@ -23,9 +23,9 @@ test('blog posts have a unique identifier property named id', async () => {
 
 test('a new blog post is successfully added', async () => {
   const newPost = {
-    title: "Julios Blog's Post",
-    author: "Web Doe",
-    url: "https://web.com/meet-web-doe",
+    title: 'Julios Blog\'s Post',
+    author: 'Web Doe',
+    url: 'https://web.com/meet-web-doe',
     likes: 10000
   }
 
@@ -48,9 +48,9 @@ test('a new blog post is successfully added', async () => {
 
 test('likes property defaults to 0 when ommited ', async () => {
   const newPost = {
-    title: "Juan Blog's Post",
-    author: "Web Doe",
-    url: "https://web.com/meet-web-doe",
+    title: 'Juan Blog\'s Post',
+    author: 'Web Doe',
+    url: 'https://web.com/meet-web-doe',
   }
 
   const response = await api
@@ -64,7 +64,7 @@ test('likes property defaults to 0 when ommited ', async () => {
 
 test('fails with 400 Bad Request when title or url is missing', async () => {
   const newPost = {
-    author: "Web Doe",
+    author: 'Web Doe',
     likes: 1000
   }
 
