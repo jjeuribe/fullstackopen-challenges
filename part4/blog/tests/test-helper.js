@@ -1,0 +1,53 @@
+const Post = require('../models/Post')
+
+const dummyPosts = [
+  {
+    title: 'Juan Blog\'s Post',
+    author: 'Web Doe',
+    url: 'https://web.com/meet-web-doe',
+    likes: 0,
+  },
+  {
+    title: 'Learning JavaScript',
+    author: 'Jane Developer',
+    url: 'https://web.com/learning-javascript',
+    likes: 12,
+  },
+  {
+    title: 'Building My First Full-Stack App',
+    author: 'Code Master',
+    url: 'https://web.com/first-full-stack-app',
+    likes: 8,
+  },
+  {
+    title: 'Understanding REST APIs',
+    author: 'API Explorer',
+    url: 'https://web.com/understanding-rest-apis',
+    likes: 25,
+  },
+];
+
+const getAllPostsFromDB = async () => {
+  const posts = await Post.find({})
+  return posts.map(post => post.toJSON())
+}
+
+const createNonExistingPost = async () => {
+  const post = new Post({
+    title: 'willremovethissoon',
+    author: 'willremovethissoon',
+    url: 'willremovethissoon',
+    likes: 0,
+  })
+
+  await post.save()
+  await post.deleteOne()
+
+  return post.toJSON()
+}
+
+module.exports = {
+  dummyPosts,
+  getAllPostsFromDB,
+  createNonExistingPost
+}

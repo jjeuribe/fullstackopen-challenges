@@ -20,4 +20,43 @@ router.post('/', async (request, response) => {
   return response.status(201).json(savedPost)
 })
 
+router.delete('/:id', async (request, response) => {
+  const { id } = request.params
+
+  const deletedPost = await Post.findByIdAndDelete(id)
+
+  if (!deletedPost) {
+    return response.status(404).json({
+      error: 'post not found'
+    })
+  }
+
+  return response.status(204).end()
+})
+
+router.patch('/:id', async (request, response) => {
+  const { id } = request.params
+  const { likes } = request.body
+
+  if (!likes) {
+    return response.status(400).json({
+      error: 'likes is required'
+    })
+  }
+
+  const updatedPost = await Post.findByIdAndUpdate(
+    id,
+    { likes },
+    { new: true }
+  )
+
+  if (!updatedPost) {
+    return response.status(404).json({
+      error: 'post not found'
+    })
+  }
+
+  return response.status(204).end()
+})
+
 module.exports = router
