@@ -10,14 +10,22 @@ router.get('/', async (request, response) => {
 router.post('/', async (request, response) => {
   const { title, author, url, likes = 0 } = request.body
 
-  if (!title || !url) {
-    return response.sendStatus(400)
+  if (!title?.trim()) {
+    return response.status(400).json({
+      error: 'post title is required'
+    })
+  }
+
+  if (!url?.trim()) {
+    return response.status(400).json({
+      error: 'post url is required'
+    })
   }
 
   const post = new Post({ title, author, url, likes })
-  const savedPost = await post.save()
+  const newPost = await post.save()
 
-  return response.status(201).json(savedPost)
+  return response.status(201).json(newPost)
 })
 
 router.delete('/:id', async (request, response) => {
