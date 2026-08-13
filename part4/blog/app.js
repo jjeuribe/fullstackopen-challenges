@@ -2,6 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const config = require('./utils/config')
 const logger = require('./utils/logger')
+const middleware = require('./utils/middleware')
 const postsRouter = require('./controllers/posts')
 
 const app = express()
@@ -18,7 +19,11 @@ mongoose
   })
 
 app.use(express.json())
+app.use(middleware.requestLogger)
 
 app.use('/api/posts', postsRouter)
+
+app.use(middleware.unknownEndpoint)
+app.use(middleware.errorHandler)
 
 module.exports = app
