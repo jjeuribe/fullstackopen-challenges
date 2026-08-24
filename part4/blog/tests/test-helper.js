@@ -1,4 +1,5 @@
 const Post = require('../models/Post')
+const User = require('../models/User')
 
 const dummyPosts = [
   {
@@ -27,9 +28,32 @@ const dummyPosts = [
   },
 ];
 
+const dummyUsers = [
+  {
+    name: 'Jane Smith',
+    username: 'janesmith',
+    password: 'secret456'
+  },
+  {
+    name: 'Carlos García',
+    username: 'cgarcia',
+    password: 'myPassword789'
+  },
+  {
+    name: 'Emily Johnson',
+    username: 'emilyj',
+    password: 'helloWorld321'
+  }
+]
+
 const getAllPostsFromDB = async () => {
   const posts = await Post.find({})
   return posts.map(post => post.toJSON())
+}
+
+const getAllUsersFromDB = async () => {
+  const users = await User.find({})
+  return users.map(user => user.toJSON())
 }
 
 const createNonExistingPost = async () => {
@@ -48,6 +72,8 @@ const createNonExistingPost = async () => {
 
 module.exports = {
   dummyPosts,
+  dummyUsers,
   getAllPostsFromDB,
-  createNonExistingPost
+  createNonExistingPost,
+  getAllUsersFromDB
 }

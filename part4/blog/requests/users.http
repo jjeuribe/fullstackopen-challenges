@@ -1,0 +1,19 @@
+### Create a new user
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "name": "Jhon Doe",
+  "username": "jhon",
+  "password": "G3n3r1cA"
+}
+
+### Create another user
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "name": "Carlos García",
+  "username": "cgarcia",
+  "password": "myPassword789"
+}
