@@ -68,6 +68,88 @@ describe('Users API', () => {
 
       assert.strictEqual(passwordMatches, true)
     })
+
+    test('returns 400 Bad Request when username is not provided', async () => {
+      const newUser = {
+        name: 'Susan Doe',
+        password: 'G3n3r1ca'
+      }
+
+      const response = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+
+      assert.strictEqual(response.body.error, 'username is required')
+    })
+
+    test('returns 400 Bad Request when username is less than 3 characters', async () => {
+      const newUser = {
+        name: 'Susan Doe',
+        username: 's1',
+        password: 'G3n3r1ca'
+      }
+
+      const response = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      assert.strictEqual(response.body.error, 'username must be at least 3 characters long')
+    })
+
+    test('returns 400 Bad Request when password is not provided', async () => {
+      const newUser = {
+        name: 'Susan Doe',
+        username: 'susan01',
+      }
+
+      const response = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      assert.strictEqual(response.body.error, 'password is required')
+    })
+
+    test('returns 400 Bad Request when password less than 3 characters long', async () => {
+      const newUser = {
+        name: 'Susan Doe',
+        username: 'susan01',
+        password: 'G3'
+      }
+
+      const response = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      assert.strictEqual(response.body.error, 'password must be at least 3 characters long')
+    })
+
+    test('returns 400 Bad Request when username is already taken', async () => {
+      const newUser = {
+        name: 'Emily Johnson',
+        username: 'emilyj',
+        password: 'helloWorld321'
+      }
+
+      const usersAtStart = testHelper.getAllUsersFromDB()
+
+      const response = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      const usersAtEnd = testHelper.getAllUsersFromDB()
+
+      assert.strictEqual(response.body.error, 'username already taken')
+      assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+    })
   })
 
   describe('GET /api/users', () => {
