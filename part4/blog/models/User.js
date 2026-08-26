@@ -7,7 +7,13 @@ const userSchema = mongoose.Schema({
     required: true,
     unique: true
   },
-  password: String
+  password: String,
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post'
+    }
+  ]
 })
 
 userSchema.set('toJSON', {

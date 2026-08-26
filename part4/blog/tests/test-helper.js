@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt')
 const Post = require('../models/Post')
 const User = require('../models/User')
 
@@ -70,10 +71,32 @@ const createNonExistingPost = async () => {
   return post.toJSON()
 }
 
+const setupUserWithPosts = async () => {
+  const dummyUser = dummyUsers[0]
+
+  const user = await User.create({
+    ...dummyUser,
+    password: await bcrypt.hash(dummyUser.password, 10)
+  })
+
+  const posts = await Post.insertMany(
+    dummyPosts.map(post => ({
+      ...post,
+      user: user._id
+    }))
+  )
+
+  user.posts = posts.map(post => post._id)
+  await user.save()
+
+  return { user, posts }
+}
+
 module.exports = {
   dummyPosts,
   dummyUsers,
   getAllPostsFromDB,
   createNonExistingPost,
-  getAllUsersFromDB
+  getAllUsersFromDB,
+  setupUserWithPosts
 }

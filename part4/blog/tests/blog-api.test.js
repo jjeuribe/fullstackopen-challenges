@@ -3,6 +3,7 @@ const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const testHelper = require('./test-helper')
+const User = require('../models/User')
 const Post = require('../models/Post')
 const app = require('../app')
 
@@ -10,8 +11,10 @@ const api = supertest(app)
 
 describe('Blog posts API', () => {
   beforeEach(async () => {
+    await User.deleteMany({})
     await Post.deleteMany({})
-    await Post.insertMany(testHelper.dummyPosts)
+
+    await testHelper.setupUserWithPosts()
   })
 
   describe('when retrieving blog posts', () => {
@@ -29,6 +32,17 @@ describe('Blog posts API', () => {
         assert.ok('id' in post)
       })
     })
+
+    test('each blog post as a creator', async () => {
+      const response = await api.get('/api/posts')
+
+      response.body.forEach(post => {
+        assert.ok(post.user)
+        assert.ok(post.user.id)
+        assert.ok(post.user.username)
+        assert.ok(post.user.name)
+      })
+    })
   })
 
   describe('when creating a blog post', () => {
@@ -42,17 +56,36 @@ describe('Blog posts API', () => {
 
       const postsAtStart = await testHelper.getAllPostsFromDB()
 
-      await api
+      const response = await api
         .post('/api/posts')
         .send(newPost)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
       const postsAtEnd = await testHelper.getAllPostsFromDB()
-      const posts = postsAtEnd.map(p => p.title)
 
       assert.strictEqual(postsAtStart.length + 1, postsAtEnd.length)
-      assert(posts.includes(newPost.title))
+
+      const createdPost = postsAtEnd.find(
+        post => post.id === response.body.id
+      )
+
+      assert.ok(createdPost)
+      assert.strictEqual(createdPost.title, newPost.title)
+      assert.strictEqual(createdPost.author, newPost.author)
+      assert.strictEqual(createdPost.url, newPost.url)
+      assert.strictEqual(createdPost.likes, newPost.likes)
+      assert.ok(createdPost.user)
+
+      const users = await testHelper.getAllUsersFromDB()
+      const user = users.find(
+        user => user.id === createdPost.user.toString()
+      )
+
+      assert.ok(user)
+      assert.ok(user.posts.some(
+        post => post.toString() === createdPost.id.toString()
+      ))
     })
 
     test('defaults likes to 0 when the like property is ommited ', async () => {
