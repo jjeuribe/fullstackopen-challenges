@@ -1,6 +1,24 @@
+const jwt = require('jsonwebtoken')
 const router = require('express').Router()
+const config = require('../utils/config')
 const User = require('../models/User')
 const Post = require('../models/Post')
+
+const getToken = (request) => {
+  const authHeader = request.get('Authorization')
+
+  if (!authHeader) {
+    return null
+  }
+
+  const [scheme, token] = authHeader.split(' ')
+
+  if (scheme !== 'Bearer' || !token) {
+    return null
+  }
+
+  return token
+}
 
 router.get('/', async (request, response) => {
   const posts = await Post.find({}).populate('user', {
@@ -27,7 +45,9 @@ router.post('/', async (request, response) => {
     })
   }
 
-  const user = await User.findOne()
+  const token = getToken(request)
+  const decodedToken = jwt.verify(token, config.JWT_SECRET)
+  const user = await User.findOne({ username: decodedToken.username })
   const post = new Post({ title, author, url, likes, user: user._id })
   const newPost = await post.save()
 

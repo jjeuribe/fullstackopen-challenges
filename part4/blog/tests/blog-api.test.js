@@ -3,18 +3,20 @@ const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const testHelper = require('./test-helper')
-const User = require('../models/User')
-const Post = require('../models/Post')
 const app = require('../app')
 
 const api = supertest(app)
 
 describe('Blog posts API', () => {
   beforeEach(async () => {
-    await User.deleteMany({})
-    await Post.deleteMany({})
+    await testHelper.clearDatabase()
 
-    await testHelper.setupUserWithPosts()
+    const [user] = await testHelper.createUsers(testHelper.dummyUsers)
+
+    await testHelper.setupPostsForUser(
+      user,
+      testHelper.dummyPosts
+    )
   })
 
   describe('when retrieving blog posts', () => {
@@ -47,6 +49,10 @@ describe('Blog posts API', () => {
 
   describe('when creating a blog post', () => {
     test('creates a new blog post', async () => {
+      const { username } = testHelper.dummyUsers[0]
+      const creator = await testHelper.getUserByUsername(username)
+      const token = await testHelper.generateAuthTokenFor(creator)
+
       const newPost = {
         title: 'Julios Blog\'s Post',
         author: 'Web Doe',
@@ -58,6 +64,7 @@ describe('Blog posts API', () => {
 
       const response = await api
         .post('/api/posts')
+        .set('Authorization', `Bearer ${token}`)
         .send(newPost)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -66,6 +73,7 @@ describe('Blog posts API', () => {
 
       assert.strictEqual(postsAtStart.length + 1, postsAtEnd.length)
 
+      // Verify created Post
       const createdPost = postsAtEnd.find(
         post => post.id === response.body.id
       )
@@ -77,18 +85,20 @@ describe('Blog posts API', () => {
       assert.strictEqual(createdPost.likes, newPost.likes)
       assert.ok(createdPost.user)
 
-      const users = await testHelper.getAllUsersFromDB()
-      const user = users.find(
-        user => user.id === createdPost.user.toString()
-      )
+      // Verify User who created the Post and their Posts
+      const refreshedCreator = await testHelper.getUserByUsername(username)
 
-      assert.ok(user)
-      assert.ok(user.posts.some(
+      assert.strictEqual(refreshedCreator.id.toString(), createdPost.user.toString())
+      assert.ok(refreshedCreator.posts.some(
         post => post.toString() === createdPost.id.toString()
       ))
     })
 
     test('defaults likes to 0 when the like property is ommited ', async () => {
+      const { username } = testHelper.dummyUsers[0]
+      const creator = await testHelper.getUserByUsername(username)
+      const token = await testHelper.generateAuthTokenFor(creator)
+
       const newPost = {
         title: 'Juan Blog\'s Post',
         author: 'Web Doe',
@@ -97,6 +107,7 @@ describe('Blog posts API', () => {
 
       const response = await api
         .post('/api/posts')
+        .set('Authorization', `Bearer ${token}`)
         .send(newPost)
         .expect(201)
         .expect('Content-Type', /application\/json/)

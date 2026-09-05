@@ -1,4 +1,6 @@
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
 const Post = require('../models/Post')
 const User = require('../models/User')
 
@@ -57,6 +59,11 @@ const getAllUsersFromDB = async () => {
   return users.map(user => user.toJSON())
 }
 
+const getUserByUsername = async (username) => {
+  const user = await User.findOne({ username })
+  return user.toJSON()
+}
+
 const createNonExistingPost = async () => {
   const post = new Post({
     title: 'willremovethissoon',
@@ -71,25 +78,47 @@ const createNonExistingPost = async () => {
   return post.toJSON()
 }
 
-const setupUserWithPosts = async () => {
-  const dummyUser = dummyUsers[0]
+const createUsers = async (users) => {
+  const usersWithHashedPasswords = await Promise.all(
+    users.map(async (user) => ({
+      ...user,
+      password: await bcrypt.hash(user.password, 10)
+    }))
+  )
 
-  const user = await User.create({
-    ...dummyUser,
-    password: await bcrypt.hash(dummyUser.password, 10)
-  })
+  return User.insertMany(usersWithHashedPasswords)
+}
 
-  const posts = await Post.insertMany(
-    dummyPosts.map(post => ({
+const setupPostsForUser = async (user, posts) => {
+  const createdPosts = await Post.insertMany(
+    posts.map(post => ({
       ...post,
       user: user._id
     }))
   )
 
-  user.posts = posts.map(post => post._id)
+  user.posts = createdPosts.map(post => post._id)
+
   await user.save()
 
-  return { user, posts }
+  return createdPosts
+}
+
+const generateAuthTokenFor = async (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      username: user.username,
+      name: user.name
+    },
+    config.JWT_SECRET,
+    { expiresIn: '15m' }
+  )
+}
+
+const clearDatabase = async () => {
+  await User.deleteMany({})
+  await Post.deleteMany({})
 }
 
 module.exports = {
@@ -98,5 +127,9 @@ module.exports = {
   getAllPostsFromDB,
   createNonExistingPost,
   getAllUsersFromDB,
-  setupUserWithPosts
+  getUserByUsername,
+  createUsers,
+  setupPostsForUser,
+  generateAuthTokenFor,
+  clearDatabase
 }

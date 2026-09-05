@@ -1,13 +1,14 @@
 ### Get all posts
 GET http://localhost:3003/api/posts
 
-### Create a new post 
+### Create a new post
 POST http://localhost:3003/api/posts
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOGNhNzU0M2EzOWU1ZmIzMTZhZjgwNCIsInVzZXJuYW1lIjoiY2dhcmNpYSIsIm5hbWUiOiJDYXJsb3MgR2FyY8OtYSIsImlhdCI6MTc4Nzk2OTM2NSwiZXhwIjoxNzg3OTcwMjY1fQ.I9zM_-JPYGIYXXcWxWZBo96AFzr6-t0ntx2EckpcSjg
 
 {
-  "title": "Web's Doe Way",
-  "author": "Web Doe",
-  "url": "https://web.com/meet-web-doe",
-  "likes": 10000
+  "title": "100 años de soledad",
+  "author": "Garcia Marquez",
+  "url": "https://web.com/100-anios-de-soledad",
+  "likes": 1000
 }
