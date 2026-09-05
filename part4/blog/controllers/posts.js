@@ -7,17 +7,11 @@ const Post = require('../models/Post')
 const getToken = (request) => {
   const authHeader = request.get('Authorization')
 
-  if (!authHeader) {
+  if (!authHeader?.toLowerCase().startsWith('bearer ')) {
     return null
   }
 
-  const [scheme, token] = authHeader.split(' ')
-
-  if (scheme !== 'Bearer' || !token) {
-    return null
-  }
-
-  return token
+  return authHeader.slice(7)
 }
 
 router.get('/', async (request, response) => {
